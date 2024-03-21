@@ -1,4 +1,4 @@
-from random import randint
+from random import randint , random
 import curses
 from time import sleep
 
@@ -13,6 +13,8 @@ max_line = curses.LINES - 1
 max_cols = curses.COLS - 1
 Player_line = 0
 Player_cols = 0
+enemy_cols = []
+enemy_lines = []
 world = []
 
 def init() :
@@ -48,6 +50,29 @@ def Player() :
     global Player_line , Player_cols
     stdscr.addch(Player_line,Player_cols,'^')
     stdscr.refresh()
+    
+def enemy_init() :
+    global enemy_cols , enemy_lines , game_left , game_right , rand
+    rand = random()
+    if random() > 0.95 :
+        enemy_cols.append(randint(game_left,game_right))
+        enemy_lines.append(0)
+
+def enemy_draw() :
+    global enemy_cols , enemy_lines , rand
+    if rand > 0.95 :
+        for i in range(len(enemy_cols)) :
+            stdscr.addch(enemy_lines[i],enemy_cols[i],'E')
+        stdscr.refresh()
+
+def enemy_move() : 
+    global enemy_cols , enemy_lines , rand
+    if random() > 0.95 :
+        for item in range(len(enemy_cols)) :
+            stdscr.addch(enemy_lines[item],enemy_cols[item],' ')
+            enemy_lines[item] += 1
+            stdscr.addch(enemy_lines[item],enemy_cols[item],'E')
+        stdscr.refresh()        
 
 def move(ch) :
     global Player_cols , Player_line, game_right , game_left
@@ -63,17 +88,21 @@ init()
 Player_line = max_line-2
 Player_cols = max_cols//2
 while game :
-    Player()
-    draw()
-    Fortress()
     try  :
         ch = stdscr.getkey()
     except :
         ch = ' '
     if ch == 'q' :
         game = False
-        sleep(1)
         stdscr.clear()
         stdscr.refresh()
+        sleep(1)
     if ch in 'ad':
         move(ch)
+    Player()
+    draw()
+    enemy_init()
+    enemy_draw()
+    enemy_move()
+    Fortress()
+
