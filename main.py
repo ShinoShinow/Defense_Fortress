@@ -101,7 +101,7 @@ def shoot_aim() :
         pass
 
 def enemy_check() :
-    global shoot_lines , shoot_cols , enemy_lines , enemy_cols
+    global shoot_lines , shoot_cols , enemy_lines , enemy_cols , game
     Iout = 99999
     Jout = 99999
     for i in range(0,len(shoot_lines)) :
@@ -117,6 +117,17 @@ def enemy_check() :
         del shoot_cols[Iout]
         del enemy_lines[Jout]
         del enemy_cols[Jout]
+
+def checkdie() :
+    global game
+    for i in range(0,len(enemy_lines)) :
+        if enemy_lines[i] == max_line-1 :
+            game = False
+            stdscr.addstr(max_line//2,max_cols//2,"YOU LOSE!!")
+            stdscr.refresh()
+            sleep(2)
+            stdscr.clear()
+            stdscr.refresh()
 
 def move(ch) :
     global Player_cols , Player_line, game_right , game_left
@@ -154,3 +165,4 @@ while game :
     shoot_move()
     shoot_aim()
     Fortress()
+    checkdie()
