@@ -15,6 +15,8 @@ Player_line = 0
 Player_cols = 0
 enemy_cols = []
 enemy_lines = []
+shoot_lines = []
+shoot_cols = []
 world = []
 
 def init() :
@@ -52,27 +54,69 @@ def Player() :
     stdscr.refresh()
     
 def enemy_init() :
-    global enemy_cols , enemy_lines , game_left , game_right , rand
-    rand = random()
+    global enemy_cols , enemy_lines , game_left , game_right
     if random() > 0.95 :
-        enemy_cols.append(randint(game_left,game_right))
+        enemy_cols.append(randint(game_left+2,game_right-2))
         enemy_lines.append(0)
 
 def enemy_draw() :
-    global enemy_cols , enemy_lines , rand
-    if rand > 0.95 :
-        for i in range(len(enemy_cols)) :
-            stdscr.addch(enemy_lines[i],enemy_cols[i],'E')
-        stdscr.refresh()
+    global enemy_cols , enemy_lines
+    for i in range(len(enemy_cols)) :
+        stdscr.addch(enemy_lines[i],enemy_cols[i],'E')
+    stdscr.refresh()
 
 def enemy_move() : 
     global enemy_cols , enemy_lines , rand
-    if random() > 0.95 :
+    if random() > 0.96 :
         for item in range(len(enemy_cols)) :
             stdscr.addch(enemy_lines[item],enemy_cols[item],' ')
             enemy_lines[item] += 1
             stdscr.addch(enemy_lines[item],enemy_cols[item],'E')
         stdscr.refresh()        
+
+def shoot() :
+    global shoot_lines, shoot_cols
+    shoot_lines.append(Player_line-1)
+    shoot_cols.append(Player_cols)
+    stdscr.addch(Player_line-1,Player_cols,'*')
+    stdscr.refresh()
+
+def shoot_move() :
+    for i in range(0,len(shoot_lines)) :
+        stdscr.addch(shoot_lines[i],shoot_cols[i],' ')
+        shoot_lines[i] -= 1
+        stdscr.addch(shoot_lines[i],shoot_cols[i],'*')
+    stdscr.refresh()
+
+def shoot_aim() :
+    global shoot_lines , shoot_cols
+    try :
+        for i in shoot_lines :
+            if shoot_lines[i] == 0 :
+                stdscr.addch(shoot_lines[i],shoot_cols[i],' ')
+                stdscr.refresh()
+                del shoot_lines[i]
+                del shoot_cols[i]
+    except:
+        pass
+
+def enemy_check() :
+    global shoot_lines , shoot_cols , enemy_lines , enemy_cols
+    Iout = 99999
+    Jout = 99999
+    for i in range(0,len(shoot_lines)) :
+        for j in range(0,len(enemy_lines)) :
+            if shoot_lines[i] == enemy_lines[j] and shoot_cols[i] == enemy_cols[j] :
+                stdscr.addch(shoot_lines[i],shoot_cols[i],' ')
+                stdscr.addch(enemy_lines[j],enemy_cols[j],' ')
+                stdscr.refresh()
+                Iout = i
+                Jout = j
+    if Iout != 99999 :
+        del shoot_lines[Iout]
+        del shoot_cols[Iout]
+        del enemy_lines[Jout]
+        del enemy_cols[Jout]
 
 def move(ch) :
     global Player_cols , Player_line, game_right , game_left
@@ -91,12 +135,14 @@ while game :
     try  :
         ch = stdscr.getkey()
     except :
-        ch = ' '
+        ch = ''
     if ch == 'q' :
         game = False
         stdscr.clear()
         stdscr.refresh()
         sleep(1)
+    if ch == ' ' :
+        shoot()
     if ch in 'ad':
         move(ch)
     Player()
@@ -104,5 +150,7 @@ while game :
     enemy_init()
     enemy_draw()
     enemy_move()
+    enemy_check()
+    shoot_move()
+    shoot_aim()
     Fortress()
-
